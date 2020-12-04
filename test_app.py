@@ -1,5 +1,4 @@
 from unittest import TestCase
-from flask import json, jsonify
 
 from app import app, games
 
@@ -51,7 +50,7 @@ class BoggleAppTestCase(TestCase):
             self.assertIn(game_data["gameId"], games)
 
     def test_api_score_word(self):
-        """ Checks if the word is legal then returns a JSON repsonse
+        """ Tests the score_word function from app.py
 
             A word is legal if:
             - Is in the wordlist
@@ -65,8 +64,7 @@ class BoggleAppTestCase(TestCase):
 
         with self.client as client:
 
-            game_data = client.get("/api/new-game").get_data(as_text=True)
-            game_data = json.loads(game_data)
+            game_data = client.get("/api/new-game").get_json()
 
             game_id = game_data["gameId"]
 
@@ -81,13 +79,13 @@ class BoggleAppTestCase(TestCase):
             ]
 
             word_data = {"gameId": game_id, "word": "NEED"}
-            result = client.post("api/score-word", json=word_data).get_json()
-            self.assertEqual(result.get("result"), "ok")
+            response = client.post("api/score-word", json=word_data).get_json()
+            self.assertEqual(response.get("result"), "ok")
 
             word_data = {"gameId": game_id, "word": "POTATO"}
-            result2 = client.post("api/score-word", json=word_data).get_json()
-            self.assertEqual(result2.get("result"), "not-on-board")
+            response = client.post("api/score-word", json=word_data).get_json()
+            self.assertEqual(response.get("result"), "not-on-board")
 
             word_data = {"gameId": game_id, "word": "FLARGHEN"}
-            result3 = client.post("api/score-word", json=word_data).get_json()
-            self.assertEqual(result3.get("result"), "not-word")
+            response = client.post("api/score-word", json=word_data).get_json()
+            self.assertEqual(response.get("result"), "not-word")

@@ -43,9 +43,6 @@ def score_word():
         If a valid word: {result: "ok"}
 
     """
-    # print(dir(request))
-    # game_id = request.form.get("gameId")
-    # print("game_info =", game_info)
 
     game_info = request.json
 
