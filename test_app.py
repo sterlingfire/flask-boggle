@@ -1,4 +1,5 @@
 from unittest import TestCase
+from flask import json
 
 from app import app, games
 
@@ -24,14 +25,62 @@ class BoggleAppTestCase(TestCase):
         with self.client as client:
             response = client.get('/')
             html = response.get_data(as_text=True)
+
             # test that you're getting a template
-            self.assertIn("""<form method="POST" id="newWordForm">""", html)
+            self.assertIn("""id=\"newWordForm\"""", html)
 
     def test_api_new_game(self):
         """Test starting a new game."""
 
         with self.client as client:
-            json = client.get("/api/new-game").get_data(as_text=True)
-            print("client.get(\"/api/new-game\"):", json)
-            # write a test for this route
-            self.assertIn("gameId", json)
+
+            game_data = client.get("/api/new-game").get_data(as_text=True)
+            game_data = json.loads(game_data)
+
+            # print("client.get(\"/api/new-game\"):", json)
+
+            # Check the keys in the dictionary
+            self.assertIn("gameId", game_data)
+            self.assertIn("board", game_data)
+
+            # Check that the board is a list of lists
+            self.assertIsInstance(game_data["board"], list)
+            self.assertIsInstance(game_data["board"][0], list)
+
+            # Check that new game is stored in the games dictionary
+            self.assertIn(game_data["gameId"], games)
+    
+    def test_api_score_word(self):
+        """ Checks if the word is legal then returns a JSON repsonse
+
+            A word is legal if:
+            - Is in the wordlist
+            - Findable in the board
+
+            Valid responses:
+            If not a word:   {result: "not-word"}
+            If not on board: {result: "not-on-board"}
+            If a valid word: {result: "ok"}
+        """
+
+        with self.client as client:
+
+            game_data = client.get("/api/new-game").get_data(as_text=True)
+            game_data = json.loads(game_data)
+
+            game_id = game_data["gameId"]
+
+            game = games[game_id]
+
+            game.board = [
+                ['E', 'O', 'B', 'I', 'M'], 
+                ['A', 'N', 'V', 'A', 'I'], 
+                ['A', 'I', 'R', 'S', 'Z'], 
+                ['X', 'B', 'A', 'N', 'D'], 
+                ['E', 'L', 'B', 'E', 'E']
+            ]
+
+            word_data = {"gameId": game_id, "word": "need"}
+
+            client.post("api/score-word")
+                        
