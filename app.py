@@ -53,12 +53,17 @@ def score_word():
     game = games.get(game_id)
 
     result = ""
+    score = 0
+    is_dupe = not game.is_word_not_a_dup(word)
+    is_word = game.is_word_in_word_list(word)
+    is_on_board = game.check_word_on_board(word)
 
-    if game.is_word_in_word_list(word) and game.check_word_on_board(word):
+    if is_word and is_on_board:
         result = "ok"
-    elif not game.is_word_in_word_list(word):
+        score = game.play_and_score_word(word)
+    elif not is_word:
         result = "not-word"
-    else:
+    elif not is_on_board:
         result = "not-on-board"
 
-    return jsonify({"result": result})
+    return jsonify({"score": score, "result": result, "dupe": is_dupe})

@@ -7,7 +7,7 @@ const $message = $(".msg");
 const $table = $("table");
 
 let gameId;
-
+let score = 0;
 /** Start */
 
 async function start() {
@@ -47,12 +47,12 @@ function displayMessage(message) {
 }
 
 
-/** Add a valid word to the Word List 
+/** Add a valid word to the Word List
  *  - add a new li item to the .word ul
  */
 
 function displayValidWord(word) {
-  
+
   let $li = $("<li>").text(word);
 
   $playedWords.append($li);
@@ -71,12 +71,17 @@ async function checkWord(evt) {
   let word = $wordInput.val().toUpperCase();
   let data = { gameId, word };
   let response = await axios.post("/api/score-word", data);
-
+  let wordScore = response.data.score;
+  // updateAndDisplayScore(wordScore); // TODO: update score in DOM
+   // Don't play if its a dupe
+  if (response.data.dupe) {
+    displayMessage("Duplicate Word. Please try again.");
+  }
   // if invalid move, display message
-  if (response.data.result !== "ok"){
+  else if (response.data.result !== "ok") {
     let msg = (response.data.result === "not-word")
       ? "That is not a word" : "That word is not in the board";
-    
+
     displayMessage(msg);
   } else {
     // if valid move, add word to playedwords
